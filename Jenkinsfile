@@ -21,6 +21,20 @@ pipeline {
 
                 } // stage ends
 
+                stage("runTest"){
+
+                                    steps {
+
+                                        echo ' building the node project ...... !!'
+
+                                        nodejs('Node-12.18'){
+                                       
+                                        sh 'npm run test'
+                                        }
+
+                                    } // steps ends
+
+                                } // stage ends
     } // stages end
 
 
