@@ -5,21 +5,17 @@ pipeline {
 
     stages{
 
-        stage("checkout"){
-
-            steps {
-
-                echo 'git checkout ..... !!'
-
-            } // steps ends
-
-        } // stage ends
 
             stage("build"){
 
                     steps {
 
-                        echo ' building thee code ...... !!'
+                        echo ' building the node project ...... !!'
+
+                        nodejs('Node-12.18'){
+                        sh 'node --version'
+                        sh 'npm install'
+                        }
 
                     } // steps ends
 
