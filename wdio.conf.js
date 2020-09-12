@@ -1,31 +1,3 @@
-const fs = require('fs');
-const argv = require("yargs").argv;
-const wdioParallel = require('wdio-cucumber-parallel-execution');
-const { removeSync } = require('fs-extra');
-
-// The below module is used for cucumber html report generation
-const reporter = require('cucumber-html-reporter');
-const currentTime = new Date().toJSON().replace(/:/g, "-");
-const sourceSpecDirectory = `tests/features/featureFiles`;
-const jsonTmpDirectory = `tests/reports/json/tmp/`;
-
-
-let featureFilePath = `${sourceSpecDirectory}/*.feature`;
-
-// If parallel execution is set to true, then create the Split the feature files
-// And store then in a tmp spec directory (created inside `the source spec directory)
-if (argv.parallel === 'true') {
-
-    tmpSpecDirectory = `${sourceSpecDirectory}/tmp`;
-    wdioParallel.performSetup({
-        sourceSpecDirectory: sourceSpecDirectory,
-        tmpSpecDirectory: tmpSpecDirectory,
-        cleanTmpSpecDirectory: true
-    });
-    featureFilePath = `${tmpSpecDirectory}/*.feature`;
-}
-
-
 exports.config = {
     //
     // ====================
@@ -45,7 +17,7 @@ exports.config = {
     // directory is where your package.json resides, so `wdio` will be called from there.
     //
     specs: [
-        featureFilePath
+        './test/specs/**/*.js'
     ],
     // Patterns to exclude.
     exclude: [
@@ -74,15 +46,16 @@ exports.config = {
     // https://docs.saucelabs.com/reference/platforms-configurator
     //
     capabilities: [{
-
+    
         // maxInstances can get overwritten per capability. So if you have an in-house Selenium
         // grid with only 5 firefox instances available you can make sure that not more than
         // 5 instances get started at a time.
         maxInstances: 5,
         //
         browserName: 'chrome',
+        acceptInsecureCerts: true
         // If outputDir is provided WebdriverIO can capture driver session logs
-        // it is possible to configure which outputDir is provided WebdriverIO can capture driver session logs logTypes to include/exclude.
+        // it is possible to configure which logTypes to include/exclude.
         // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
         // excludeDriverLogs: ['bugreport', 'server'],
     }],
@@ -93,7 +66,7 @@ exports.config = {
     // Define all options that are relevant for the WebdriverIO instance here
     //
     // Level of logging verbosity: trace | debug | info | warn | error | silent
-    logLevel: 'silent',
+    logLevel: 'info',
     //
     // Set specific log levels per logger
     // loggers:
@@ -117,14 +90,14 @@ exports.config = {
     // with `/`, the base url gets prepended, not including the path portion of your baseUrl.
     // If your `url` parameter starts without a scheme or `/` (like `some/path`), the base url
     // gets prepended directly.
-    baseUrl: 'http://v4.webdriver.io/',
+    baseUrl: 'http://localhost',
     //
     // Default timeout for all waitFor* commands.
-    waitforTimeout: 5000,
+    waitforTimeout: 10000,
     //
     // Default timeout in milliseconds for request
     // if browser driver or grid doesn't send response
-    connectionRetryTimeout: 90000,
+    connectionRetryTimeout: 120000,
     //
     // Default request retries count
     connectionRetryCount: 3,
@@ -133,15 +106,15 @@ exports.config = {
     // Services take over a specific job you don't want to take care of. They enhance
     // your test setup with almost no effort. Unlike plugins, they don't add new
     // commands. Instead, they hook themselves up into the test process.
-    services: ['selenium-standalone','docker'],
-
+    services: ['chromedriver'],
+    
     // Framework you want to run your specs with.
     // The following are supported: Mocha, Jasmine, and Cucumber
     // see also: https://webdriver.io/docs/frameworks.html
     //
     // Make sure you have the wdio adapter package for the specific framework installed
     // before running any tests.
-    framework: 'cucumber',
+    framework: 'Mocha',
     //
     // The number of times to retry the entire specfile when it fails as a whole
     // specFileRetries: 1,
@@ -152,48 +125,17 @@ exports.config = {
     // Test reporter for stdout.
     // The only one supported by default is 'dot'
     // see also: https://webdriver.io/docs/dot-reporter.html
-    reporters: [
-        // 'spec'
-        'dot',
-        ['junit', {
-            outputDir: './'
-        }],
-        ['cucumberjs-json', {
-            jsonFolder: jsonTmpDirectory,
-            language: 'en',
-        }]
-    ],
+    reporters: ['spec'],
 
-    dockerOptions: {
-        image: 'selenium/standalone-chrome',
-        healthCheck: 'http://localhost:4444',
-        options: {
-            p: ['4444:4444'],
-            shmSize: '2g'
-        }
-    },
+
     
-
     //
-    // If you are using Cucumber you need to specify the location of your step definitions.
-    cucumberOpts: {
-        require: ['./tests/features/step_definitions/*.js', './tests/features/support/*.js'],        // <string[]> (file/dir) require files before executing features
-        backtrace: false,   // <boolean> show full backtrace for errors
-        requireModule: [],  // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)
-        dryRun: false,      // <boolean> invoke formatters without executing steps
-        failFast: false,    // <boolean> abort the run on first failure
-        format: ['[pretty]'], // <string[]> (type[:path]) specify the output format, optionally supply PATH to redirect formatter output (repeatable)
-        colors: true,       // <boolean> disable colors in formatter output
-        snippets: true,     // <boolean> hide step definition snippets for pending steps
-        source: true,       // <boolean> hide source uris
-        profile: [],        // <string[]> (name) specify the profile to use
-        strict: false,      // <boolean> fail if there are any undefined or pending steps
-        tagExpression: '',  // <string> (expression) only execute the features or scenarios with tags matching the expression
-        timeout: 60000,     // <number> timeout for step definitions
-        ignoreUndefinedDefinitions: false, // <boolean> Enable this config to treat undefined definitions as warnings.
+    // Options to be passed to Mocha.
+    // See the full list at http://mochajs.org/
+    mochaOpts: {
+        ui: 'bdd',
+        timeout: 60000
     },
-
-
     //
     // =====
     // Hooks
@@ -207,14 +149,8 @@ exports.config = {
      * @param {Object} config wdio configuration object
      * @param {Array.<Object>} capabilities list of capabilities details
      */
-    onPrepare: () => {
-        // Remove the `tmp/` folder that holds the json report files
-        removeSync(jsonTmpDirectory);
-        if (!fs.existsSync(jsonTmpDirectory)){
-            fs.mkdirSync(jsonTmpDirectory);
-        }
-
-    },
+    // onPrepare: function (config, capabilities) {
+    // },
     /**
      * Gets executed before a worker process is spawned and can be used to initialise specific service
      * for that worker as well as modify runtime environments in an async fashion.
@@ -320,33 +256,8 @@ exports.config = {
      * @param {Array.<Object>} capabilities list of capabilities details
      * @param {<Object>} results object containing test results
      */
-    onComplete: () => {
-
-        try{
-            let consolidatedJsonArray = wdioParallel.getConsolidatedData({
-                parallelExecutionReportDirectory: jsonTmpDirectory
-            });
-
-            let jsonFile = `${jsonTmpDirectory}report.json`;
-            fs.writeFileSync(jsonFile, JSON.stringify(consolidatedJsonArray));
-    
-            var options = {
-                theme: 'bootstrap',
-                jsonFile: jsonFile,
-                output: `tests/reports/html/report-${currentTime}.html`,
-                reportSuiteAsScenarios: true,
-                scenarioTimestamp: true,
-                launchReport: true,
-                ignoreBadJsonFile: true
-            };
-    
-            reporter.generate(options);
-        } catch(err){
-            console.log('err', err);
-        }
-
-
-    }
+    // onComplete: function(exitCode, config, capabilities, results) {
+    // },
     /**
     * Gets executed when a refresh happens.
     * @param {String} oldSessionId session ID of the old session
