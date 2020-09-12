@@ -21,6 +21,23 @@ pipeline {
 
                 } // stage ends
 
+                   stage("Test"){
+
+                                    steps {
+
+                                        echo ' building the node project ...... !!'
+
+                                        nodejs('Node-12.18'){
+                                        sh 'node --version'
+                                        sh 'npx wdio wdio.conf.js
+                                        }
+
+                                    } // steps ends
+
+                                } // stage ends
+
+
+
 
     } // stages end
 
