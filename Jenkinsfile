@@ -29,7 +29,7 @@ pipeline {
 
                                         nodejs('Node-12.18'){
                                         sh 'node --version'
-                                        sh 'npx wdio wdio.conf.js
+                                        sh 'npx wdio wdio.conf.js'
                                         }
 
                                     } // steps ends
