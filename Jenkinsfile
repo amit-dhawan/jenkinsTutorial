@@ -1,7 +1,9 @@
 // Declarative pipeline syntax example
 
 pipeline {
-    agent any
+  agent {
+          docker { image 'node:12-alpine' }
+      }
 
     stages{
 
@@ -12,29 +14,15 @@ pipeline {
 
                         echo ' building the node project ...... !!'
 
-                        nodejs('Node-12.18'){
                         sh 'node --version'
-                        sh 'npm install'
-                        }
+                      
+
 
                     } // steps ends
 
                 } // stage ends
 
-                   stage("Test"){
 
-                                    steps {
-
-                                        echo ' building the node project ...... !!'
-
-                                        nodejs('Node-12.18'){
-                                        sh 'node --version'
-                                        sh 'npx wdio wdio.conf.js'
-                                        }
-
-                                    } // steps ends
-
-                                } // stage ends
 
 
 
